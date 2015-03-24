@@ -23,7 +23,7 @@ public class Utils {
         }
         final File dir = context.getApplicationContext().getExternalFilesDir(
                 folderName);
-        log("dir:" + dir);
+//        log("dir:" + dir);
         if (dir != null) {
             return dir.getAbsolutePath() + File.separator;
         }

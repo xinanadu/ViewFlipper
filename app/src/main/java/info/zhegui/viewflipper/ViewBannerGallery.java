@@ -50,6 +50,7 @@ public class ViewBannerGallery extends RelativeLayout {
                     for (; mListData.size() > 0 && i < mListData.size(); i++) {
                         ImageView iv = new ImageView(mContext);
                         iv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                        iv.setScaleType(ImageView.ScaleType.FIT_XY);
                         final BannerItem item = mListData.get(i);
                         if (TextUtils.isEmpty(item.title)) {
                             layoutSubtitle.setVisibility(View.GONE);
@@ -200,6 +201,17 @@ public class ViewBannerGallery extends RelativeLayout {
             }
         });
 
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        log("onSizeChanged()");
+        log("this.getWdith():" + this.getWidth());
+        ViewGroup.LayoutParams params=this.getLayoutParams();
+        params.height=this.getWidth()*3/7;
+        this.setLayoutParams(params);
+        log("params new height:" + params.height);
     }
 
     public void flip(final ArrayList<BannerItem> listData, final boolean showError) {
