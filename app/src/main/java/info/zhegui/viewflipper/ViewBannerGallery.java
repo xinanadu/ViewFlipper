@@ -94,11 +94,11 @@ public class ViewBannerGallery extends RelativeLayout {
                                     image.setScaleType(ImageView.ScaleType.FIT_XY);
                                     image.setAdjustViewBounds(true);
                                     if (i == 0) {
-                                        image.setBackgroundResource(R.drawable.dots1);
+                                        image.setBackgroundResource(android.R.drawable.presence_online);
                                         if (!TextUtils.isEmpty(item.title))
                                             tvSubtitle.setText(item.title);
                                     } else {
-                                        image.setBackgroundResource(R.drawable.dots2);
+                                        image.setBackgroundResource(android.R.drawable.presence_invisible);
                                     }
 
                                     layoutBannerIndex.addView(image, new LayoutParams(dotSize, dotSize));
@@ -142,13 +142,13 @@ public class ViewBannerGallery extends RelativeLayout {
             for (int i = 0; layoutBannerIndex != null && i < layoutBannerIndex.getChildCount(); i++) {
                 ImageView iv = (ImageView) layoutBannerIndex.getChildAt(i);
                 if (i == mViewFlipper.getDisplayedChild()) {
-                    iv.setBackgroundResource(R.drawable.dots1);
+                    iv.setBackgroundResource(android.R.drawable.presence_online);
 
                     BannerItem item = mListData.get(i);
                     if (!TextUtils.isEmpty(item.title))
                         tvSubtitle.setText(item.title);
                 } else {
-                    iv.setBackgroundResource(R.drawable.dots2);
+                    iv.setBackgroundResource(android.R.drawable.presence_invisible);
                 }
             }
 
