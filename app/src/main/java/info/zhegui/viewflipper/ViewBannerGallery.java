@@ -1,10 +1,8 @@
 package info.zhegui.viewflipper;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -16,12 +14,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -33,11 +31,14 @@ public class ViewBannerGallery extends RelativeLayout {
     private Context mContext;
     private ViewFlipper mViewFlipper;
     private TextView tvHint;
-    private RelativeLayout layoutSubtitle;
+    private TextView tvSubtitle;
     private float lastX;
     private final long FLIP_NEXT_DELAY = 2000;
     private final static int WHAT_ADD_VIEW = 101, WHAT_DOWNLOAD_ERROR = 102;
     private ArrayList<BannerItem> mListData = new ArrayList<>();
+    LinearLayout layoutBannerIndex;
+    private boolean beforeSizeChanged = true;
+    private int dotSize = 20;
 
 
     private Handler mHandler = new Handler() {
@@ -52,9 +53,6 @@ public class ViewBannerGallery extends RelativeLayout {
                         iv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         iv.setScaleType(ImageView.ScaleType.FIT_XY);
                         final BannerItem item = mListData.get(i);
-                        if (TextUtils.isEmpty(item.title)) {
-                            layoutSubtitle.setVisibility(View.GONE);
-                        }
                         String bannerDir = Utils.getExternalPathPrefix(mContext, "banner");
 //                        log("bannerDir:" + bannerDir);
                         if (bannerDir != null) {
@@ -91,6 +89,19 @@ public class ViewBannerGallery extends RelativeLayout {
 //                                            }
 //                                        });
 //                                    }
+
+                                    ImageView image = new ImageView(mContext);
+                                    image.setScaleType(ImageView.ScaleType.FIT_XY);
+                                    image.setAdjustViewBounds(true);
+                                    if (i == 0) {
+                                        image.setBackgroundResource(R.drawable.dots1);
+                                        if (!TextUtils.isEmpty(item.title))
+                                            tvSubtitle.setText(item.title);
+                                    } else {
+                                        image.setBackgroundResource(R.drawable.dots2);
+                                    }
+
+                                    layoutBannerIndex.addView(image, new LayoutParams(dotSize, dotSize));
                                 } else {
                                     mHandler.sendEmptyMessage(WHAT_DOWNLOAD_ERROR);
                                     break;
@@ -102,10 +113,12 @@ public class ViewBannerGallery extends RelativeLayout {
                             mHandler.sendEmptyMessage(WHAT_DOWNLOAD_ERROR);
                             break;
                         }
+
+
                     }
                     if (mListData.size() == 0) {
                         tvHint.setText("没有数据");
-                    } else if(i==mListData.size()){
+                    } else if (i == mListData.size()) {
 
                         tvHint.setVisibility(View.GONE);
                         startFlip();
@@ -125,6 +138,18 @@ public class ViewBannerGallery extends RelativeLayout {
         public void run() {
             if (mViewFlipper != null) {
                 mViewFlipper.showNext();
+            }
+            for (int i = 0; layoutBannerIndex != null && i < layoutBannerIndex.getChildCount(); i++) {
+                ImageView iv = (ImageView) layoutBannerIndex.getChildAt(i);
+                if (i == mViewFlipper.getDisplayedChild()) {
+                    iv.setBackgroundResource(R.drawable.dots1);
+
+                    BannerItem item = mListData.get(i);
+                    if (!TextUtils.isEmpty(item.title))
+                        tvSubtitle.setText(item.title);
+                } else {
+                    iv.setBackgroundResource(R.drawable.dots2);
+                }
             }
 
             mHandler.postDelayed(flipNext, FLIP_NEXT_DELAY);
@@ -151,7 +176,6 @@ public class ViewBannerGallery extends RelativeLayout {
         mContext = context;
         View layout = LayoutInflater.from(mContext).inflate(
                 R.layout.view_banner_gallery, this, true);
-        layoutSubtitle = (RelativeLayout) layout.findViewById(R.id.layout_subtitle);
         tvHint = (TextView) layout.findViewById(R.id.tv_hint);
         tvHint.setOnClickListener(new OnClickListener() {
             @Override
@@ -159,6 +183,8 @@ public class ViewBannerGallery extends RelativeLayout {
                 flip(mListData, true);
             }
         });
+        layoutBannerIndex = (LinearLayout) layout.findViewById(R.id.layout_dots);
+        tvSubtitle=(TextView)layout.findViewById(R.id.tv_subtitle);
         mViewFlipper = (ViewFlipper) layout.findViewById(R.id.viewflipper);
         mViewFlipper.setFlipInterval(2000);
 //        mViewFlipper.setAutoStart(true);
@@ -208,10 +234,12 @@ public class ViewBannerGallery extends RelativeLayout {
         super.onSizeChanged(w, h, oldw, oldh);
         log("onSizeChanged()");
         log("this.getWdith():" + this.getWidth());
-        ViewGroup.LayoutParams params=this.getLayoutParams();
-        params.height=this.getWidth()*3/7;
+        ViewGroup.LayoutParams params = this.getLayoutParams();
+        params.height = this.getWidth() * 3 / 7;
         this.setLayoutParams(params);
         log("params new height:" + params.height);
+        beforeSizeChanged = false;
+        dotSize = ViewBannerGallery.this.getWidth() / 24;
     }
 
     public void flip(final ArrayList<BannerItem> listData, final boolean showError) {
@@ -221,6 +249,12 @@ public class ViewBannerGallery extends RelativeLayout {
         new Thread() {
             @Override
             public void run() {
+                while (beforeSizeChanged) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (Exception e) {
+                    }
+                }
                 boolean fullDownloaded = true;
                 boolean error = false;
                 mListData = listData;
@@ -254,7 +288,6 @@ public class ViewBannerGallery extends RelativeLayout {
                 } else if (showError) {
                     mHandler.sendEmptyMessage(WHAT_DOWNLOAD_ERROR);
                 }
-
 
             }
         }.start();
@@ -325,7 +358,7 @@ public class ViewBannerGallery extends RelativeLayout {
     }
 
     private String getMD5(String str) {
-        String suffix=str.substring(str.lastIndexOf("."));
+        String suffix = str.substring(str.lastIndexOf("."));
 //        log("suffix:"+suffix);
         final String MD5 = "MD5";
         try {
@@ -343,7 +376,7 @@ public class ViewBannerGallery extends RelativeLayout {
                     h = "0" + h;
                 hexString.append(h);
             }
-            return hexString.toString()+suffix;
+            return hexString.toString() + suffix;
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

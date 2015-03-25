@@ -17,12 +17,11 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/layout_subtitle"
         android:layout_alignParentBottom="true"
         android:visibility="visible">
 
         <LinearLayout
-            android:id="@+id/tab_home_gallery"
+            android:id="@+id/layout_subtitle"
             android:layout_width="fill_parent"
             android:layout_height="25dp"
             android:layout_alignParentBottom="true"
@@ -32,7 +31,7 @@
             android:spacing="16dp">
 
             <TextView
-                android:id="@+id/tab_home_textxt"
+                android:id="@+id/tv_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
                 android:layout_gravity="center_vertical"
@@ -42,7 +41,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/tab_home_curid"
+            android:id="@+id/layout_dots"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
             android:layout_alignParentBottom="true"
